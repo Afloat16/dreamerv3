@@ -143,11 +143,13 @@ class Consec(base.Stream):
     return {
         'source': self.source.save(),
         'index': self.index,
+        'current': self.current,
     }
 
   def load(self, data):
     self.source.load(data['source'])
-    self.index = data['index']
+    self.current = data.get('current')
+    self.index = data['index'] if self.current is not None else 0
 
 
 class Zip(base.Stream):
@@ -239,3 +241,4 @@ class Mixer(base.Stream):
         data['sources'], self.keys)
     for key in self.keys:
       self.iterators[key].load(data['sources'][key])
+
