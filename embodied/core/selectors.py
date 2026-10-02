@@ -298,7 +298,9 @@ class SampleTree:
         finite = np.isinf(uprobs)
         probs = finite / finite.sum()
       elif total == 0:
-        probs = np.ones(len(uprobs)) / len(uprobs)
+        # Uniform over leaves, including partially filled subtrees.
+        counts = np.array([x.count for x in node.children])
+        probs = counts / counts.sum()
       else:
         probs = uprobs / total
       choice = self.rng.choice(np.arange(len(uprobs)), p=probs)
@@ -308,12 +310,13 @@ class SampleTree:
 
 class SampleTreeNode:
 
-  __slots__ = ('parent', 'children', 'uprob')
+  __slots__ = ('parent', 'children', 'uprob', 'count')
 
   def __init__(self, parent=None):
     self.parent = parent
     self.children = []
     self.uprob = 0
+    self.count = 0
 
   def __repr__(self):
     return (
@@ -341,10 +344,13 @@ class SampleTreeNode:
 
   def recompute(self):
     self.uprob = sum(x.uprob for x in self.children)
+    self.count = sum(x.count for x in self.children)
     self.parent and self.parent.recompute()
 
 
 class SampleTreeEntry:
+
+  count = 1
 
   __slots__ = ('parent', 'key', 'uprob')
 
